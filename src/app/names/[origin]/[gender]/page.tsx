@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import type { Metadata } from "next";
 import { NAMES, type Origin, type Gender } from "@/data/names";
 import { NameBrowser } from "@/components/NameBrowser";
 import { AdSlot } from "@/components/AdSlot";
@@ -18,6 +19,29 @@ export function generateStaticParams() {
   const out: { origin: string; gender: string }[] = [];
   for (const o of ["indian", "english"]) for (const g of ["boy", "girl"]) out.push({ origin: o, gender: g });
   return out;
+}
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ origin: string; gender: string }>;
+}): Promise<Metadata> {
+  const { origin, gender } = await params;
+  if (origin !== "indian" && origin !== "english") return {};
+  if (gender !== "boy" && gender !== "girl") return {};
+  const o = ORIGIN_LABEL[origin as Origin];
+  const g = GENDER_LABEL[gender as Gender];
+  const count = NAMES.filter(
+    (n) => n.origin === (origin as Origin) && n.gender === (gender as Gender),
+  ).length;
+  const title = `${o.label} ${g.label} Names with Meanings`;
+  const description = `Discover ${count}+ beautiful ${o.label.toLowerCase()} ${g.label.toLowerCase()} names with meanings. Modern, traditional, and unique ${o.label.toLowerCase()} ${g.label.toLowerCase()} baby names — search by name or meaning to find the perfect one.`;
+  return {
+    title,
+    description,
+    alternates: { canonical: `/names/${origin}/${gender}` },
+    openGraph: { title, description, type: "website" },
+  };
 }
 
 export default async function NamesListPage({

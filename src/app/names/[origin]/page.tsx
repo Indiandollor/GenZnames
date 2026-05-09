@@ -1,23 +1,48 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import type { Metadata } from "next";
 import { AdSlot } from "@/components/AdSlot";
 import type { Origin } from "@/data/names";
 
-const ORIGIN_META: Record<Origin, { label: string; emoji: string; tagline: string }> = {
+const ORIGIN_META: Record<Origin, { label: string; emoji: string; tagline: string; description: string }> = {
   indian: {
     label: "Indian",
     emoji: "🪔",
     tagline: "Sanskrit, Vedic & modern Indian names",
+    description:
+      "Browse beautiful Indian baby names with meanings — Sanskrit, Hindu, Vedic and modern picks for boys and girls. Find the perfect Indian name for your newborn.",
   },
   english: {
     label: "English",
     emoji: "🌷",
     tagline: "Classic, modern & biblical English names",
+    description:
+      "Browse beautiful English baby names with meanings — classic, modern, biblical, and trending picks for boys and girls. Find the perfect English name for your newborn.",
   },
 };
 
 export function generateStaticParams() {
   return [{ origin: "indian" }, { origin: "english" }];
+}
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ origin: string }>;
+}): Promise<Metadata> {
+  const { origin } = await params;
+  if (origin !== "indian" && origin !== "english") return {};
+  const meta = ORIGIN_META[origin as Origin];
+  return {
+    title: `${meta.label} Baby Names with Meanings — Boy & Girl`,
+    description: meta.description,
+    alternates: { canonical: `/names/${origin}` },
+    openGraph: {
+      title: `${meta.label} Baby Names with Meanings`,
+      description: meta.description,
+      type: "website",
+    },
+  };
 }
 
 export default async function OriginPage({
